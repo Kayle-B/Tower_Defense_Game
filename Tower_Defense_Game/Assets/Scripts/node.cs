@@ -3,9 +3,12 @@ using UnityEngine.EventSystems;
 public class node : MonoBehaviour
 {
     public Color hoverColor;
-
-    private GameObject turret;
+    public Color notEnoughMoneyColor;
     public Vector3 positionOffset;
+
+    [Header("Optional")]
+    public GameObject turret;
+    
     private Renderer rend;
     private Color startColor;
     BuildManager buildManager;
@@ -17,20 +20,31 @@ public class node : MonoBehaviour
         startColor = rend.material.color;
     }
 
+    public Vector3 GetBuildPosition()
+    {
+        return transform.position + positionOffset;
+    }
+
     private void OnMouseDown()
     {
-        if(buildManager.GetTurretToBuild() == null)
+        //if(buildManager.GetTurretToBuild() == null)
+        //    return;
+        if (EventSystem.current.IsPointerOverGameObject())
             return;
 
+        if (!buildManager.CanBuild)
+            return;
 
-        if(turret != null)
+        if (turret != null)
         {
             Debug.Log("Can't build there!");
             return; 
         }
-        positionOffset = new Vector3(0f, 0.4f, 0f);
-        GameObject turretToBuild = buildManager.GetTurretToBuild();
-        turret = (GameObject)Instantiate(turretToBuild, transform.position + positionOffset, transform.rotation);
+
+        buildManager.BuildTurretOn(this);
+        //positionOffset = new Vector3(0f, 0.4f, 0f);
+        //GameObject turretToBuild = buildManager.GetTurretToBuild();
+        //turret = (GameObject)Instantiate(turretToBuild, transform.position + positionOffset, transform.rotation);
 
     }
     void OnMouseEnter()
@@ -38,13 +52,23 @@ public class node : MonoBehaviour
         if (EventSystem.current.IsPointerOverGameObject())
             return;
 
-        if (buildManager.GetTurretToBuild() == null)
+        //if (buildManager.GetTurretToBuild() == null)
+        //    return;
+        if (!buildManager.CanBuild)
             return;
 
-      //  buildManager.GetTurretToBuild() == null;
+        //  buildManager.GetTurretToBuild() == null;
 
+        if (buildManager.HasMoney)
+        {
+            rend.material.color = hoverColor;
+        }
+        else
+        {
+            rend.material.color = notEnoughMoneyColor;
+        }
 
-        rend.material.color = hoverColor;
+        //rend.material.color = hoverColor;
     }
 
     void OnMouseExit()
